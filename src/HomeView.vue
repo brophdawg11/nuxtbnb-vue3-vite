@@ -2,8 +2,36 @@
     <div>
         <p v-if="data.isLoading">Loading...</p>
         <div v-else-if="data.home">
-            {{ data.home }}
-            <div ref="map" style="width: 400px; height: 400px;" />
+            <div style="display: flex;">
+                <img v-for="image in data.home.images" :key="image" :src="image" width="200" height="150" />
+            </div>
+            {{ data.home.title }}<br>
+            ${{ data.home.pricePerNight }} / night<br>
+            <img src="/images/marker.svg" width="20" height="20" />
+            {{ data.home.location.street }}
+            {{ data.home.location.city }}
+            {{ data.home.location.state }}
+            {{ data.home.location.country }}<br>
+            <img src="/images/star.svg" width="20" height="20" />{{ data.home.reviewValue }}<br>
+            {{ data.home.guests }} guests,
+            {{ data.home.bedrooms }} rooms,
+            {{ data.home.beds }} beds,
+            {{ data.home.bathrooms }} baths<br>
+            {{ data.home.description }}
+            <div style="width:400px; height:400px;" ref="map"></div>
+            <!-- <ul>
+                <li v-for="review in reviews" :key="review.objectID">
+                    <img :src="review.reviewer.image" /><br>
+                    {{ review.reviewer.name }}<br>
+                    {{ formatDate(review.date) }}<br>
+                    <ShortText :text="review.comment" :target="50" />
+                </li>
+            </ul> -->
+            <!-- <img :src="user.image" /><br>
+            {{ user.name }}<br>
+            {{ formatDate(user.joined) }}<br>
+            {{ user.reviewCount }}<br>
+            {{ user.description }} -->
         </div>
         <p v-else>
             {{ data.error }}
@@ -55,5 +83,14 @@ export default {
             data,
         };
     },
+    methods: {
+        formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString(undefined, {
+                month: 'long',
+                year: 'numeric',
+            });
+        },
+    }
 };
 </script>
