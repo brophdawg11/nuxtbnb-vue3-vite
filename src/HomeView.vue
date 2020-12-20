@@ -18,20 +18,32 @@
             {{ data.home.beds }} beds,
             {{ data.home.bathrooms }} baths<br>
             {{ data.home.description }}
+
             <div style="width:400px; height:400px;" ref="map"></div>
-            <!-- <ul>
-                <li v-for="review in reviews" :key="review.objectID">
+
+            <ul v-if="data.reviews">
+                <li v-for="review in data.reviews" :key="review.objectID">
                     <img :src="review.reviewer.image" /><br>
                     {{ review.reviewer.name }}<br>
                     {{ formatDate(review.date) }}<br>
                     <ShortText :text="review.comment" :target="50" />
                 </li>
-            </ul> -->
-            <!-- <img :src="user.image" /><br>
-            {{ user.name }}<br>
-            {{ formatDate(user.joined) }}<br>
-            {{ user.reviewCount }}<br>
-            {{ user.description }} -->
+            </ul>
+            <p v-else>
+                Error loading reviews
+            </p>
+
+            <div v-if="data.user">
+                <img :src="data.user.image" /><br>
+                {{ data.user.name }}<br>
+                {{ formatDate(data.user.joined) }}<br>
+                {{ data.user.reviewCount }}<br>
+                {{ data.user.description }}
+            </div>
+            <p v-else>
+                Error loading host information
+            </p>
+
         </div>
         <p v-else>
             {{ data.error }}
@@ -43,21 +55,36 @@
 import { ref, reactive, readonly, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { getHome } from './api';
+import { getHome, getReviewsByHomeId, getUserByHomeId } from './api';
 import useShowMap from './maps';
+
+import ShortText from './ShortText.vue';
 
 function useHomeData(map, showMap) {
     const isLoading = ref(true);
     const home = ref();
+    const reviews = ref();
+    const user = ref();
     const error = ref();
 
     onMounted(async () => {
         const route = useRoute();
-        const homeResponse = await getHome(route.params.homeId);
+        const { homeId } = route.params;
+        const [homeResponse, reviewsResponse, userResponse] = await Promise.all([
+            getHome(homeId),
+            getReviewsByHomeId(homeId),
+            getUserByHomeId(homeId),
+        ]);
         isLoading.value = false;
         const { ok, data, statusText } = homeResponse;
         if (ok) {
             home.value = data;
+            if (reviewsResponse.ok) {
+                reviews.value = reviewsResponse.data.hits;
+            }
+            if (userResponse.ok) {
+                user.value = userResponse.data.hits[0];
+            }
             const { lat, lng } = data._geoloc;
             nextTick(() => showMap(map.value, lat, lng));
         } else {
@@ -68,11 +95,16 @@ function useHomeData(map, showMap) {
     return readonly(reactive({
         isLoading,
         home,
+        reviews,
+        user,
         error,
     }));
 }
 
 export default {
+    components: {
+        ShortText,
+    },
     setup(props, ctx) {
         const map = ref(null)
         const showMap = useShowMap();
