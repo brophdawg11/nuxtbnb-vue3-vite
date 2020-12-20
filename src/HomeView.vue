@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { ref, reactive, readonly, onMounted, nextTick } from 'vue';
+import { ref, reactive, readonly, nextTick, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { getHome, getReviewsByHomeId, getUserByHomeId } from './api';
@@ -60,7 +60,7 @@ import useShowMap from './maps';
 
 import ShortText from './ShortText.vue';
 
-function useHomeData(map, showMap) {
+function useHomeData() {
     const isLoading = ref(true);
     const home = ref();
     const reviews = ref();
@@ -85,8 +85,6 @@ function useHomeData(map, showMap) {
             if (userResponse.ok) {
                 user.value = userResponse.data;
             }
-            const { lat, lng } = data._geoloc;
-            nextTick(() => showMap(map.value, lat, lng));
         } else {
             error.value = statusText;
         }
@@ -108,7 +106,16 @@ export default {
     setup(props, ctx) {
         const map = ref(null)
         const showMap = useShowMap();
-        const data = useHomeData(map, showMap);
+        const data = useHomeData();
+
+        const unwatch = watch(() => data.home, (home) => {
+            if (!home || !home._geoloc) {
+                return;
+            }
+            unwatch();
+            nextTick(() => showMap(map.value, home._geoloc.lat, home._geoloc.lng));
+        });
+        console.log(unwatch);
 
         return {
             map,
