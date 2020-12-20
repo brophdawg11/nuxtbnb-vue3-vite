@@ -1,6 +1,8 @@
 <template>
     <div>
-        <p v-if="data.isLoading">Loading...</p>
+        <p v-if="data.isLoading">
+            Loading...
+        </p>
         <ul v-else-if="data.homes && data.homes.length > 0">
             <li v-for="home in data.homes" :key="home.objectID">
                 <HomeCard :home="home" />
@@ -16,7 +18,7 @@
 </template>
 
 <script>
-import { ref, reactive, readonly, onMounted } from 'vue'
+import { ref, reactive, readonly, onMounted } from 'vue';
 
 import { getHomes } from './api';
 

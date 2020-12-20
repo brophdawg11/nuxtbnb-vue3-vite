@@ -40,9 +40,9 @@ export default {
             const idx = this.text.indexOf(' ', this.target);
             if (idx < 0 || idx >= this.text.length) {
                 return this.text;
-            } else {
-                return `${this.text.substr(0, idx)}...`;
             }
+
+            return `${this.text.substr(0, idx)}...`;
         },
     },
 };

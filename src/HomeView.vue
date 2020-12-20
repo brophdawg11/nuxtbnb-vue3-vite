@@ -1,29 +1,37 @@
 <template>
     <div>
-        <p v-if="data.isLoading">Loading...</p>
+        <p v-if="data.isLoading">
+            Loading...
+        </p>
         <div v-else-if="data.home">
             <div style="display: flex;">
-                <img v-for="image in data.home.images" :key="image" :src="image" width="200" height="150" />
+                <img
+                    v-for="image in data.home.images"
+                    :key="image"
+                    :src="image"
+                    width="200"
+                    height="150">
             </div>
             {{ data.home.title }}<br>
             ${{ data.home.pricePerNight }} / night<br>
-            <img src="/images/marker.svg" width="20" height="20" />
+            <img src="/images/marker.svg" width="20" height="20">
             {{ data.home.location.street }}
             {{ data.home.location.city }}
             {{ data.home.location.state }}
             {{ data.home.location.country }}<br>
-            <img src="/images/star.svg" width="20" height="20" />{{ data.home.reviewValue }}<br>
+            <img src="/images/star.svg" width="20" height="20">
+            {{ data.home.reviewValue }}<br>
             {{ data.home.guests }} guests,
             {{ data.home.bedrooms }} rooms,
             {{ data.home.beds }} beds,
             {{ data.home.bathrooms }} baths<br>
             {{ data.home.description }}
 
-            <div style="width:400px; height:400px;" ref="map"></div>
+            <div ref="map" style="width:400px; height:400px;" />
 
             <ul v-if="data.reviews">
                 <li v-for="review in data.reviews" :key="review.objectID">
-                    <img :src="review.reviewer.image" /><br>
+                    <img :src="review.reviewer.image"><br>
                     {{ review.reviewer.name }}<br>
                     {{ formatDate(review.date) }}<br>
                     <ShortText :text="review.comment" :target="50" />
@@ -34,17 +42,18 @@
             </p>
 
             <div v-if="data.user">
-                <img :src="data.user.image" /><br>
+                <img :src="data.user.image"><br>
                 {{ data.user.name }}<br>
                 {{ formatDate(data.user.joined) }}<br>
                 {{ data.user.reviewCount }}<br>
                 {{ data.user.description }}
             </div>
+
             <p v-else>
                 Error loading host information
             </p>
-
         </div>
+
         <p v-else>
             {{ data.error }}
         </p>
@@ -103,19 +112,20 @@ export default {
     components: {
         ShortText,
     },
-    setup(props, ctx) {
-        const map = ref(null)
+    setup() {
+        const map = ref(null);
         const showMap = useShowMap();
         const data = useHomeData();
 
         const unwatch = watch(() => data.home, (home) => {
+            // eslint-disable-next-line no-underscore-dangle
             if (!home || !home._geoloc) {
                 return;
             }
             unwatch();
+            // eslint-disable-next-line no-underscore-dangle
             nextTick(() => showMap(map.value, home._geoloc.lat, home._geoloc.lng));
         });
-        console.log(unwatch);
 
         return {
             map,
@@ -130,6 +140,6 @@ export default {
                 year: 'numeric',
             });
         },
-    }
+    },
 };
 </script>

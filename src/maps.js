@@ -7,6 +7,20 @@ const data = reactive({
 });
 
 export default function useShowMap() {
+    function renderMap(el, lat, lng) {
+        const { maps } = window.google;
+        const mapOptions = {
+            zoom: 18,
+            center: new maps.LatLng(lat, lng),
+            disableDefaultUI: true,
+            zoomControls: true,
+        };
+        const map = new maps.Map(el, mapOptions);
+        const position = new maps.LatLng(lat, lng);
+        const marker = new maps.Marker({ position });
+        marker.setMap(map);
+    }
+
     function initMap() {
         data.loaded = true;
         if (data.waiting) {
@@ -27,20 +41,6 @@ export default function useShowMap() {
         script.async = true;
         window.initMap = initMap;
         document.head.appendChild(script);
-    }
-
-    function renderMap(el, lat, lng) {
-        const { maps } = window.google;
-        const mapOptions = {
-            zoom: 18,
-            center: new maps.LatLng(lat, lng),
-            disableDefaultUI: true,
-            zoomControls: true,
-        };
-        const map = new maps.Map(el, mapOptions);
-        const position = new maps.LatLng(lat, lng);
-        const marker = new maps.Marker({ position });
-        marker.setMap(map);
     }
 
     function showMap(el, lat, lng) {

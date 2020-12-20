@@ -1,7 +1,7 @@
 <template>
     <router-link :to="`/home/${home.objectID}`">
-        <img :src="home.images[0]" style="width: 200px;" /><br>
-        {{home.title}}<br>
+        <img :src="home.images[0]" style="width: 200px;"><br>
+        {{ home.title }}<br>
         {{ home.location.address }}
         {{ home.location.city }}
         {{ home.location.state }}<br>
@@ -18,5 +18,5 @@ export default {
             required: true,
         },
     },
-}
+};
 </script>
