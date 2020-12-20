@@ -6,7 +6,7 @@
                 <HomeCard :home="home" />
             </li>
         </ul>
-        <p v-else-if="data.homes && homdataes.homes.length === 0">
+        <p v-else-if="data.homes && data.homes.length === 0">
             No homes found
         </p>
         <p v-else>
@@ -32,7 +32,7 @@ function useData() {
         isLoading.value = false;
         const { ok, data, statusText } = homesResponse;
         if (ok) {
-            homes.value = data.hits;
+            homes.value = data;
         } else {
             error.value = statusText;
         }

@@ -80,10 +80,10 @@ function useHomeData(map, showMap) {
         if (ok) {
             home.value = data;
             if (reviewsResponse.ok) {
-                reviews.value = reviewsResponse.data.hits;
+                reviews.value = reviewsResponse.data;
             }
             if (userResponse.ok) {
-                user.value = userResponse.data.hits[0];
+                user.value = userResponse.data;
             }
             const { lat, lng } = data._geoloc;
             nextTick(() => showMap(map.value, lat, lng));

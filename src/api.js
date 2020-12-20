@@ -6,14 +6,36 @@ const headers = {
     'X-Algolia-API-Key': searchOnlyApiKey,
 };
 
-async function unwrap(res) {
+function get(obj, pathString) {
+    if (obj == null || typeof pathString !== 'string') {
+        return undefined;
+    }
+
+    let pointer = obj;
+    const toks = pathString.split('.');
+    for (let i = 0; i < toks.length; i++) {
+        // Note: don't use hasOwnProperty because it doesn't work against
+        // prototypical ES6 class properties, such as TokenSession.authToken
+        if (pointer &&
+            typeof pointer !== 'boolean' &&
+            typeof pointer[toks[i]] !== 'undefined') {
+            pointer = pointer[toks[i]];
+        } else {
+            return undefined;
+        }
+    }
+
+    return pointer;
+}
+
+async function unwrap(res, path) {
     const data = await res.json();
     const { ok, status, statusText } = res;
     return {
         ok,
         status,
         statusText,
-        data,
+        data: path ? get(data, path) : data,
     };
 }
 
@@ -30,7 +52,7 @@ export async function getHomes() {
     const url = `${baseUrl}/1/indexes/homes`;
     try {
         const res = await fetch(url, { headers });
-        return await unwrap(res);
+        return await unwrap(res, 'hits');
     } catch (e) {
         return getErrorResponse(e);
     }
@@ -58,7 +80,7 @@ export async function getReviewsByHomeId(homeId) {
                 attributesToHighlight: [],
             }),
         });
-        return await unwrap(res);
+        return await unwrap(res, 'hits');
     } catch (e) {
         return getErrorResponse(e);
     }
@@ -75,7 +97,7 @@ export async function getUserByHomeId(homeId) {
                 attributesToHighlight: [],
             }),
         });
-        return await unwrap(res);
+        return await unwrap(res, 'hits.0');
     } catch (e) {
         return getErrorResponse(e);
     }
