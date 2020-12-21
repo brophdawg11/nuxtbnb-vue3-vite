@@ -1,12 +1,8 @@
-import { reactive } from 'vue';
-
-// TODO: won't work right for SSR?
-const data = reactive({
-    loaded: false,
-    waiting: null,
-});
+import { useStore } from './store';
 
 export default function useShowMap() {
+    const { state, dispatch } = useStore();
+
     function renderMap(el, lat, lng) {
         const { maps } = window.google;
         const mapOptions = {
@@ -22,11 +18,11 @@ export default function useShowMap() {
     }
 
     function initMap() {
-        data.loaded = true;
-        if (data.waiting) {
-            const { el, lat, lng } = data.waiting;
+        dispatch('setMapsLoaded');
+        if (state.maps.waiting) {
+            const { el, lat, lng } = state.maps.waiting;
             renderMap(el, lat, lng);
-            data.waiting = null;
+            dispatch('setMapsWaiting', null);
         }
     }
 
@@ -45,10 +41,10 @@ export default function useShowMap() {
 
     function showMap(el, lat, lng) {
         addScript();
-        if (data.loaded) {
+        if (state.maps.loaded) {
             renderMap(el, lat, lng);
         } else {
-            data.waiting = { el, lat, lng };
+            dispatch('setMapsWaiting', { el, lat, lng });
         }
     }
 

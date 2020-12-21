@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import App from './App.vue';
 import './index.css';
+import { provideStore } from './store';
 
 const routes = [{
     path: '/',
@@ -18,5 +19,6 @@ const router = createRouter({
 });
 
 const app = createApp(App);
+provideStore(app);
 app.use(router);
 app.mount('#app');
