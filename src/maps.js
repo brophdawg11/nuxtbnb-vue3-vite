@@ -1,7 +1,26 @@
-import { useStore } from './store';
+import { inject } from 'vue';
+import { storeSymbol } from './store';
+
+const mapsStore = {
+    state: () => ({
+        loaded: false,
+        waiting: null,
+    }),
+    actions: {
+        setLoaded({ state }) {
+            // eslint-disable-next-line no-param-reassign
+            state.loaded = true;
+        },
+        setWaiting({ state }, payload) {
+            // eslint-disable-next-line no-param-reassign
+            state.waiting = payload;
+        },
+    },
+};
 
 export default function useShowMap() {
-    const { state, dispatch } = useStore();
+    const store = inject(storeSymbol);
+    const { state, dispatch } = store.modules.maps || store.registerModule('maps', mapsStore);
 
     function renderMap(el, lat, lng) {
         const { maps } = window.google;
@@ -18,11 +37,11 @@ export default function useShowMap() {
     }
 
     function initMap() {
-        dispatch('setMapsLoaded');
-        if (state.maps.waiting) {
-            const { el, lat, lng } = state.maps.waiting;
+        dispatch('setLoaded');
+        if (state.waiting) {
+            const { el, lat, lng } = state.waiting;
             renderMap(el, lat, lng);
-            dispatch('setMapsWaiting', null);
+            dispatch('setWaiting', null);
         }
     }
 
@@ -41,10 +60,10 @@ export default function useShowMap() {
 
     function showMap(el, lat, lng) {
         addScript();
-        if (state.maps.loaded) {
+        if (state.loaded) {
             renderMap(el, lat, lng);
         } else {
-            dispatch('setMapsWaiting', { el, lat, lng });
+            dispatch('setWaiting', { el, lat, lng });
         }
     }
 
