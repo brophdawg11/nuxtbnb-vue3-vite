@@ -1,5 +1,5 @@
 const appId = 'PKLXWAH1SN';
-const searchOnlyApiKey = 'c6819e479a69b72e2fc877e0a1fd18e4';
+const searchOnlyApiKey = process.env.ALGOLIA_SEARCH_ONLY_API_KEY;
 const baseUrl = `https://${appId}-dsn.algolia.net`;
 const headers = {
     'X-Algolia-Application-Id': appId,
