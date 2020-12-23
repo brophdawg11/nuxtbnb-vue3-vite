@@ -1,7 +1,7 @@
 import { inject } from 'vue';
 import { storeSymbol } from './store';
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const mapsStore = {
     state: () => ({
