@@ -65,7 +65,7 @@ import { ref, reactive, readonly, nextTick, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { getHome, getReviewsByHomeId, getUserByHomeId } from './api';
-import useShowMap from './maps';
+import useGoogleMaps from './maps';
 
 import ShortText from './ShortText.vue';
 
@@ -114,7 +114,7 @@ export default {
     },
     setup() {
         const map = ref(null);
-        const showMap = useShowMap();
+        const { showMap } = useGoogleMaps();
         const data = useHomeData();
 
         const unwatch = watch(() => data.home, (home) => {

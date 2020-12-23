@@ -1,30 +1,41 @@
-import { inject } from 'vue';
-import { storeSymbol } from './store';
+import { onBeforeUnmount } from 'vue';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-const mapsStore = {
-    state: () => ({
-        loaded: false,
-        waiting: null,
-    }),
-    actions: {
-        setLoaded({ state }) {
-            // eslint-disable-next-line no-param-reassign
-            state.loaded = true;
-        },
-        setWaiting({ state }, payload) {
-            // eslint-disable-next-line no-param-reassign
-            state.waiting = payload;
-        },
-    },
-};
+export default function useGoogleMaps() {
+    // Cancel any pending map renders if we unmount the requesting component
+    let cancelled = false;
 
-export default function useShowMap() {
-    const store = inject(storeSymbol);
-    const { state, dispatch } = store.modules.maps || store.registerModule('maps', mapsStore);
+    onBeforeUnmount(() => {
+        cancelled = true;
+    });
 
-    function renderMap(el, lat, lng) {
+    function addScript() {
+        window.initMapPromise = new Promise((resolve, reject) => {
+            const scriptId = 'google-map';
+            if (document.getElementById(scriptId)) {
+                window.initMapPromise.then(resolve, reject);
+                return;
+            }
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+            script.async = true;
+            script.onerror = (e) => {
+                script.parentNode.removeChild(script);
+                reject(e);
+            };
+            window.initMap = resolve;
+            document.head.appendChild(script);
+        });
+        return window.initMapPromise;
+    }
+
+    async function showMap(el, lat, lng) {
+        await addScript();
+        if (cancelled) {
+            return;
+        }
         const { maps } = window.google;
         const mapOptions = {
             zoom: 18,
@@ -38,36 +49,22 @@ export default function useShowMap() {
         marker.setMap(map);
     }
 
-    function initMap() {
-        dispatch('setLoaded');
-        if (state.waiting) {
-            const { el, lat, lng } = state.waiting;
-            renderMap(el, lat, lng);
-            dispatch('setWaiting', null);
-        }
-    }
-
-    function addScript() {
-        const scriptId = 'google-map';
-        if (document.getElementById(scriptId)) {
+    async function initAutoComplete(el) {
+        await addScript();
+        if (cancelled) {
             return;
         }
-        const script = document.createElement('script');
-        script.id = scriptId;
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
-        script.async = true;
-        window.initMap = initMap;
-        document.head.appendChild(script);
+        const { maps } = window.google;
+        const autoComplete = new maps.places.Autocomplete(el, {
+            types: ['(cities)'],
+        });
+        autoComplete.addListener('place_changed', () => {
+            const place = autoComplete.getPlace();
+            el.dispatchEvent(new CustomEvent('selected', {
+                detail: { place },
+            }));
+        });
     }
 
-    function showMap(el, lat, lng) {
-        addScript();
-        if (state.loaded) {
-            renderMap(el, lat, lng);
-        } else {
-            dispatch('setWaiting', { el, lat, lng });
-        }
-    }
-
-    return showMap;
+    return { showMap, initAutoComplete };
 }
