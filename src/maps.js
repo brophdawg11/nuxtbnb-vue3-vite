@@ -31,7 +31,7 @@ export default function useGoogleMaps() {
         return window.initMapPromise;
     }
 
-    async function showMap(el, lat, lng) {
+    async function showMap(el, lat, lng, markers) {
         await addScript();
         if (cancelled) {
             return;
@@ -44,9 +44,29 @@ export default function useGoogleMaps() {
             zoomControls: true,
         };
         const map = new maps.Map(el, mapOptions);
-        const position = new maps.LatLng(lat, lng);
-        const marker = new maps.Marker({ position });
-        marker.setMap(map);
+
+        if (markers) {
+            const bounds = new window.google.maps.LatLngBounds();
+            markers.forEach((home) => {
+                const position = new maps.LatLng(home.lat, home.lng);
+                const marker = new maps.Marker({
+                    position,
+                    icon: 'https://maps.gstatic.com/mapfiles/transparent.png',
+                    label: {
+                        text: `$${home.pricePerNight}`,
+                        className: `marker home-${home.id}`,
+                    },
+                    clickable: false,
+                });
+                marker.setMap(map);
+                bounds.extend(position);
+            });
+            map.fitBounds(bounds);
+        } else {
+            const position = new maps.LatLng(lat, lng);
+            const marker = new maps.Marker({ position });
+            marker.setMap(map);
+        }
     }
 
     async function initAutoComplete(el) {

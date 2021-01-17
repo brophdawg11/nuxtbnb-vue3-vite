@@ -10,16 +10,23 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
 import useGoogleMaps from './maps';
 
 export default {
     name: 'App',
     setup() {
+        const router = useRouter();
         const search = ref();
         const { initAutoComplete } = useGoogleMaps();
 
         onMounted(() => {
             initAutoComplete(search.value);
+        });
+
+        router.afterEach(() => {
+            search.value.value = null;
         });
 
         return {
